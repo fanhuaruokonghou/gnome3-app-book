@@ -133,76 +133,134 @@ You can do nothing except press the Ctrl + C key combination to kill it.
 这个时候您只需要 `Ctrl + C` 来停止程序即可。
 
 What just happened?
-### 发生了什么？
+### 刚刚发生了什么？
 We have set up a GLib main loop with a single source of events, a timeout.
 Initially, we set the counter variable to 0 .
+我们创建了一个 GLib 的主循环，并包含一个 timeout 事件源。
+在程序的开始我们把 counter 变量设置为 0 。
+````JavaScript
 int counter = 0;
+````
+
 We prepare a function called printCounter to print the counter variable's value, and
 increase its value by one immediately after printing. Then we return true to indicate that
 we want the counter to continue.
+我们准备了一个叫 printCounter 的函数来打印 counter 变量的值，在打印后我们会立即给它加一。
+然后返回 true 来表明继续计数。
+````JavaScript
 bool printCounter() {
-stdout.printf("%d\n", counter++);
-return true;
+	stdout.printf("%d\n", counter++);
+	return true;
 }
+````
+
 In the constructor, we create a Timeout object with a 1000 ms interval pointing to our
 printCounter function. This means that printCounter will be called at every 1-second
 interval, and it will be repeatedly called as long as printCounter returns true .
+在构造函数内，我们创建一个 Timeout 对象，以 1000 毫秒的间隔和 printCounter 函数为参数。
+这也就是我们想每隔 1 秒 printCounter 函数都会被调用，只要 printCounter 函数返回 true ，
+它就会重复地被调用。
+````JavaScript
 public Main ()
 {
-Timeout.add(1000, printCounter);
+	Timeout.add(1000, printCounter);
 }
+````
+
 In the main function, we instantiate the Main class, create a MainLoop object, and call run .
 This will cause the program to stay running until we manually terminate it. When the loop
 is running, it can accept events submitted to it. The Timeout object that we created earlier
 produces such an event. Whenever the timer interval expires, it notifies the main loop,
 which in turn calls the printCounter function.
+在 main 函数中，我们把 Main 类实例化，创建一个 MainLoop 对象并调用 run 函数来运行它。
+这将会让程序持续的运行直到我们手动结束它。当 loop 运行时，它会接受到提交给它的事件。
+我们先前创建的 Timeout 对象就会产生这类事件。当定时器 (timer) 的时间间隔到达时，它会通知
+主循环，接着调用 printCounter 函数。
+````JavaScript
 static int main (string[] args)
 {
-Main main = new Main();
-var loop = new MainLoop();
-loop.run ();
-return 0;
+	Main main = new Main();
+	var loop = new MainLoop();
+	loop.run ();
+	return 0;
 }
+````
+
 Now, let's take a look at the JavaScript code. If you notice, the class structure is a bit different
 from what we learned in the previous chapter. Here we use Seed Runtime's construction
 of class.
+现在看一下 JavaScript 的代码，您会注意到类的结构与前一章节所学到的不太一样，这我们使用了
+Seed 类的运行时构建。
+````JavaScript
 GLib = imports.gi.GLib;
 GObject = imports.gi.GObject;
+````
+
 Here, we import GLib and GObject . Then we construct a class called Main , which is based
 on GObject .
+这我们导入了 GLib 和 GObject ，然后构造一个基于 GObject 的类，也就是 Main 。 
+
 Here is how we do it. The following code says that we subclass GType into a new class called
 Main and pass the object structure into the argument.
+看看我们怎么做的，下面的代码显示了我们创建一个基于 GType 的新类叫 Main ，并传递一个对象结构体
+作为参数。
+````JavaScript
 Main = new GType({
-parent: GObject.Object.type,
-name: "Main",
+	parent: GObject.Object.type,
+	name: "Main",
+````
+
 The first member of the object is parent , which is the parent of our class. We assign it with
 GObject.Object.type to denote that our class is derived from Object in the GObject
 module that we imported previously. Then we name our class as Main . After that, we put
 the functions inside the init function, which is also the constructor of the class.
 The content of the class member is similar to what we've seen in the Vala code and it is quite
 straightforward.
-init: function() {
-var counter = 0;
-this.printCounter = function() {
-Seed.printf("%d", counter++);
-return true;
-};
-GLib.timeout_add(0, 1000, this.printCounter);
-}
+对象的第一个成员是 parent ，表示这个类的父类。我们给它赋值为 GObject.Object.type ，表示我们的类
+是从我们之前导入的 GObject 中的 Object 派生出来的。
+然后我们给我们的类起名为 Main ，之后我们在类的构造函数即 init 函数中添加了一些函数
+类成员的内容与我们之前 Vala 的代码很相似，代码也很简单明了。
+
+````JavaScript
+	init: function() {
+		var counter = 0;
+
+		this.printCounter = function() {
+			Seed.printf("%d", counter++);
+			return true;
+		};
+		GLib.timeout_add(0, 1000, this.printCounter);
+	}
 });
+````
+
 Then we have the code that is analogous to what we have in Vala's static main function.
 Here we create our Main object and create the GLib's main loop.
+接下来的代码与 Vala 中静态 main 函数的类似了，创建 Main 对象和 GLib 主循环。
+````JavaScript
 var main = new Main();
 var context = GLib.main_context_default();
 var loop = new GLib.MainLoop.c_new(context);
 loop.run();
+````
+
 Have a go hero – stopping the timeout
+### 大胆实践 - 如何停止 timeout
+
 Our program counts forever. Can you make it stop after the counter reaches 10?
+我们的程序会一直数下去，您能够让它在 10 次后停下来么？
+
 You can just play with the printCounter return value.
+您只需要修改 printCounter 的返回值。
+
 Or even better, can you make it stop totally, meaning that the program would exit after the
 counter reaches 10?
+还有更好的方法，您可以完全的停止它，也就是让程序 10 次计数后退出。
+
 You can ignore the return value and rearrange the code, and
 somehow pass the loop object into the Main class. In the
 printCounter function, you can call loop.quit()
 whenever it reaches 10 to make the program break the main
 loop programmatically.
+您可以忽略返回值，重新更改下代码，把 loop 对象放到 Main 类中。
+在 printCounter 函数，当到达 10 次时您可以调用 loop.quit() 来中止程序的主循环。
