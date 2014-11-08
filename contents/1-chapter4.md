@@ -410,10 +410,14 @@ GLib properties
 Properties are key-value pairs in a storage system that are available in all instances of
 GObject, which is the base class for all objects in the GNOME system. One useful feature
 of properties is that we can subscribe for changes when the value is changed.
+属性是存储在系统中的键值对，GNOME 系统上所有基于 GObject 的实例都可以使用。
+属性一个有用的特性就是我们可以订阅变化通知，即当值改变时会收到通知。
+
 Time for action – accessing properties
 ### 实践环节 - 访问属性
 We are going to learn how to set and get a value to and from a property as well as monitor
 the changes.
+我们将学习下如何设置和获取属性的值并监视任何改变。
 1.	Create a new script called core-properties.js and fill it with this code:
 1. 创建一个新的脚本，并起名为 core-properties.js ，并输入下面的代码：
 
@@ -504,6 +508,7 @@ public class Main : Object
 ````
 3. Run it and notice the messages printed. Note that you can press the Ctrl + C
 combination keys to stop the program.
+3. 运行后会显示下面的结果，您仍需要按 `Ctrl + C` 来停止程序。
 ````
 Counter value has changed to 0
 Counter value has changed to 1
@@ -523,12 +528,17 @@ What just happened?
 ###  刚刚发生了什么？
 In the JavaScript code, we need to declare the properties inside the properties array, and
 fill it with the property's object.
+在 JavaScript 代码中，我们需要在属性数组里声明属性，并把它填入到属性的对象里。
 Here we describe that our property has the name counter and is of type integer. It needs
 to declare the default, minimum, and maximum values. It also needs the flags. From the
 flags, we can see GObject.ParamFlags.CONSTRUCT , which means that the property is
 initialized in the construction phase. It means that the default value is set when the object is
 created. We also see that it is readable and writable.
-
+这里我们属性的名字是 `counter` ，类型为整型 (integer) 。
+它需要定义一个缺省值，最小值和最大值，它还需要设置标志。
+在标志里 GObject.ParamFlags.CONSTRUCT 意味着属性在对象构造阶段初始化。
+也就是说当对象创建时，属性就被设置了缺省值。
+这个值可读也可写。
 ````JavaScript
   properties: [
     {
@@ -547,6 +557,8 @@ created. We also see that it is readable and writable.
 In the following code, we subscribe for changes. We use the signaling system and the name
 of the signal is constructed with the notify:: keyword followed by the property's name.
 After this, every change that happens to the property will trigger the signal handler.
+接下来，我们订阅变化通知，这需要使用信号系统，信号的名字由 `notify::keyword` 和属性的名字组成。
+在这之后，每当属性值发生变化时都会触发信号处理函数。
 
 ````JavaScript
   self.signal.connect("notify::counter", this.monitor_counter);
@@ -555,6 +567,8 @@ After this, every change that happens to the property will trigger the signal ha
 Here we set the value of the property by increasing its value. Note that here we modify the
 value; hence the value monitor will be triggered first, and then the actual value is printed
 by printf .
+然后，我们想办法让属性值不断累加。
+我们在下面的代码中修改属性的值，因此属性值的监视器将首先被触发，然后实际的值才被 printf 打印出来。
 
 ````JavaScript
 this.print_counter = function() {
@@ -564,6 +578,7 @@ this.print_counter = function() {
 ````
 
 And the following code shows how to read the value:
+下面的代码展示给我们如何读取这个数值：
 
 ````JavaScript
 this.monitor_counter = function(obj, gobject, data) {
@@ -573,10 +588,14 @@ this.monitor_counter = function(obj, gobject, data) {
 
 In contrast with the JavaScript code, the properties declaration in Vala is very simple. The
 declaration is similar to the normal variable declaration with some additions.
+与 JavaScript 代码对比来看，在 Vala 中属性的声明就十分简单了。
+与正常变量的声明差不多，就是附带了一些东东。
 
 In the following code, the set construct expression means that it is writable and the
 default value is initialized in the construction phase. get means that it is readable, and
 default defines the default value.
+在下面的代码，`set construct` 表达式意味着这个属性是可写的，缺省值在对象的构造阶段被初始化。
+`get` 意味着它是可读的，`default` 定义了缺省值。
 
 ````JavaScript
 public int counter {
@@ -587,10 +606,13 @@ public int counter {
 ````
 
 However, there is no mechanism to set the minimum and maximum value.
+然而，我们无法设置最小值和最大值。
 
 Then we see how reading and writing the property are done like reading and writing a
 normal variable. From outside the class, we can use the normal way to refer a member
 variable, which is by using an object name followed by a dot and the property name.
+接下来， 与读取和修改一个正常的变量一样，让我们看看如何读取和修改属性值。
+在类的外部，我们使用常用的方式来引用成员变量，也就是使用对象名后面跟一个点和属性的名字。
 
 ````JavaScript
 public bool print_counter() {
@@ -605,6 +627,7 @@ public void monitor_counter() {
 
 Subscribing for changes also uses the usual signaling mechanism, with the exception that we
 insert the property name in square brackets following the signal name, notify .
+订阅变化通知也使用信号机制，我们只需把属性值放到方括号中并放到信号名 ` notify` 后面。
 
 ````JavaScript
 notify["counter"].connect ((obj)=> {
@@ -616,18 +639,32 @@ There is something new in the code; something we have not seen before. It is the
 construct keyword. It is basically an alternative way to construct an object similar to the
 normal constructors. This style of construction is close to how GObject construction is being
 carried out in the actual generated C code.
+这段代码引入了些的东西，我们之前没有见过，也就是关键字 `construct` 。
+它是构造一个对象的基本方式，与正常的构造函数一样。
+它更类似于 GObject 构造函数是如何在实际生成的 C 代码中贯彻一样。
+
 Despite the differences between these JavaScript and Vala codes, both allow the use of a
 property just like a plain member of the class. So, in both languages, you can access the
 counter property as main.counter (assuming that the object's name is main ).
+尽管在 JavaScript 和 Vala 的代码中存在些差异，但是它们都可以像使用类的成员一亲使用属性。
+因此，你可以用 `main.counter` 来访问 `counter` 属性（假设对象的名字是 `main` ）。
 
 Pop quiz – why the value of zero is printed out
-### 问答环节
+### 小测验 - 为什么零这个值也被打印出来了
 From the output, we saw this:
+从输出的结果我们会看到下面这行：
+````
 Counter value has changed to 0
+````
 Q1. We did not set the counter to 0 explicitly, did we? So, why did it happen?
+问：我们并没有明显地给 counter 设置为 0 的值，是吧？那么发生了什么？
 1.	 Because the property has the set construct keyword defined.
+1. 因为属性被关键字 `construct` 定义了
 2.	 Because 0 is the default value.
+2. 因为 0 是缺省值。
 Have a go hero – making a property read - only
 ### 大胆实践 - 让一个属性为只读
 When a property is read-only, we can no longer set its value. Now, let's try to make the
 counter property read-only. Hint: Play with the property flag.
+当一个属性是只读的，我们就不能够更改它的值。现在，就来把 `counter` 属性设成只读的吧。
+提示：看看属性的标志位。
