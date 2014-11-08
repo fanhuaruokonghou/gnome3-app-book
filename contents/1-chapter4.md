@@ -668,3 +668,149 @@ When a property is read-only, we can no longer set its value. Now, let's try to 
 counter property read-only. Hint: Play with the property flag.
 当一个属性是只读的，我们就不能够更改它的值。现在，就来把 `counter` 属性设成只读的吧。
 提示：看看属性的标志位。
+
+Configuration files
+## 配置文件
+In many cases we need to somehow read from a configuration file in order to customize
+how our program should behave. Here, we will learn how to use the simplest configuration
+mechanism in GLib using a configuration file. Imagine that we have a configuration file and
+it contains the name and version of our application so that we can print it somewhere inside
+our program.
+Time for action – reading configuration files
+### 实践环节 - 读取配置文件
+Here's how to do it:
+1.	Create a configuration file; let's call it core-keyfile.ini . Its content is as follows:
+1. 创建一个配置文件，起名为 `core-keyfile.ini` ，输入下面的内容：
+````
+[General]
+name = "This is name"
+version = 1
+````
+2.	 Create a new Vala project and name it core-keyfile . Put the core-keyfile.
+ini file inside the project directory (but not in src ).
+3.	 Edit core_keyfile.vala to look like this:
+````JavaScript
+using GLib;
+
+public class Main : Object
+{
+  KeyFile keyFile = null;
+  public Main ()
+  {
+    keyFile = new KeyFile();
+    keyFile.load_from_file("core-keyfile.ini", 0);
+  }
+
+  public int get_version()
+  {
+    return keyFile.get_integer("General", "version");
+  }
+
+  public string get_name()
+  {
+    return keyFile.get_string("General", "name");
+  }
+
+  static int main (string[] args)
+  {
+    var app = new Main ();
+    stdout.printf("%s %d\n", app.get_name(), app.get_version());
+
+    return 0;
+  }
+}
+````
+
+4. The JavaScript code (let's call it core-keyfile.js ) looks like this (remember to
+put the .ini file in the same directory as the script):
+
+````JavaScript
+#!/usr/bin/env seed
+
+GLib = imports.gi.GLib;
+GObject = imports.gi.GObject;
+
+Main = new GType({
+  parent: GObject.Object.type,
+  name: "Main",
+  init: function(self) {
+    this.get_name = function() {
+      return this.keyFile.get_string("General", "name");
+    }
+
+    this.get_version = function() {
+      return this.keyFile.get_integer("General", "version");
+    }
+
+    this.keyFile = new GLib.KeyFile.c_new();
+    this.keyFile.load_from_file("core-keyfile.ini");
+  }
+});
+
+var main = new Main();
+Seed.printf("%s %d", main.get_name(), main.get_version());
+````
+5. Run the program and look at the output:
+````
+"This is name" 1
+````
+What just happened?
+### 刚刚发生了什么？
+The configuration file we are using has a key-value pairs structure conforming to the
+Desktop Entry Specification document of freedesktop.org . In the GNOME platform,
+this structure is commonly used, mainly in the .desktop files, which are used by the
+launcher. People using Windows might find this similar to the .ini format, which is also
+used for configuration.
+
+GLib provides the KeyFile class to access this type of configuration file. In our constructor,
+we have this snippet:
+
+````JavaScript
+keyFile = new KeyFile();
+keyFile.load_from_file("core-keyfile.ini", 0);
+````
+
+It initializes an object of KeyFile , and loads the core-keyfile.ini file into the object.
+
+If we jump a bit in our core-keyfile.ini file, we have a section, as shown, written inside
+a pair of square brackets.
+
+````
+[General]
+````
+
+And then all the entries following it can be accessed by specifying the section name. Here we
+provide two methods, get_version() and get_name() , as shortcuts to get the value of
+the name and version entries in the configuration file.
+
+````
+public int get_version()
+{
+  return keyFile.get_integer("General", "version");
+}
+
+public string get_name()
+{
+  return keyFile.get_string("General", "name");
+}
+````
+
+Inside the methods, we just get the integer value from the version entry and get the string
+value from the name entry. We also see that we obtain the entries under the General
+section. And in these methods we just return the value immediately.
+
+As shown in the following code, we consume the values from the methods and print them:
+
+````
+stdout.printf("%s %d\n", app.get_name(), app.get_version());
+````
+
+Quite easy, isn't it? The JavaScript code is also easy and straightforward; so it does not need
+to be explained further.
+
+Have a go hero – multi-section configuration
+### 大胆实践 - 多个段的配置文件
+Let's try adding more sections inside the configuration file and accessing the values. Imagine
+that we have a specific section called License that has license_file and customer_id
+as the entries. Imagine that we will use this information later to check whether the customer
+has the right to use the software.
