@@ -839,3 +839,369 @@ has the right to use the software.
 让我们在配置文件中添加多个段，然后再读取其中的内容。
 假设我们有一个段叫 License ，下面有 license_file 和 customer_id 条目。
 我们使用这些信息来检查用户是否有权力使用软件。
+
+GIO, the input/output library
+## GIO 输入/输出库
+In real life, our program must be able to access files wherever they are stored, locally or
+remotely. Imagine that we have a set of files that we need to read. The files are spread both
+locally and remotely. GIO will make it easy for us to manipulate these files as it provides an
+API to interact with our files in an abstract way.
+
+Time for action – accessing files
+### 实践环节 - 访问文件
+Let's see how it works:
+让我看下怎么做：
+1. Let's create a new script called core-files.js , and fill it with these lines:
+1. 创建一个新的 `core-files.js` 脚本，输入下面的代码：
+
+````JavaScript
+#!/usr/bin/env seed
+
+GLib = imports.gi.GLib;
+Gio = imports.gi.Gio;
+GObject = imports.gi.GObject;
+
+Main = new GType({
+  parent: GObject.Object.type,
+  name: "Main",
+  init: function(self) {
+    this.start = function() {
+      var file = null;
+      var files = ["http://en.wikipedia.org/wiki/Text_file",
+      "core-files.js"];
+
+      for (var i = 0; i < files.length; i++) {
+        if (files[i].match(/^http:/)) {
+          file = Gio.file_new_for_uri(files[i]);
+        } else {
+          file = Gio.file_new_for_path(files[i]);
+        }
+
+        var stream = file.read();
+        var data_stream = new Gio.DataInputStream.c_new(stream);
+        var data = data_stream.read_until("", 0);
+
+        Seed.print(data)
+      }
+    }
+  }
+});
+
+var main = new Main();
+main.start();
+````
+
+2. Alternatively, you can create a Vala project called core-files . Fill
+src/core_files.vala with this code:
+2. 或者，您可以创建一个 Vala 项目，起名为 `core-files` ，然后输入下面的代码到 `src/core_files.vala` 文件中：
+
+````JavaScript
+using GLib;
+
+public class Main : Object
+{
+  public Main ()
+  {
+  }
+
+  public void start ()
+  {
+    File file = null;
+    string[] files = {"http://en.wikipedia.org/wiki/Text_file",
+    "src/core_files.vala"};
+
+    for (var i = 0; i < files.length; i++) {
+      if (files[i].has_prefix("http:")) {
+        file = File.new_for_uri(files[i]);
+      } else {
+        file = File.new_for_path(files[i]);
+      }
+
+      var stream = file.read();
+      var data_stream = new DataInputStream(stream);
+
+      size_t data_read;
+      var data = data_stream.read_until("", out data_read);
+      stdout.printf(data);
+    }
+  }
+
+  static int main (string[] args)
+  {
+    var app = new Main ();
+    app.start();
+    return 0;
+  }
+}
+````
+
+3. Run the program, and notice that it fetches the Wikipedia page from the Internet as
+well as the source code of the program from the local directory.
+3. 运行程序，您会发现它会从网络上抓取 Wikipedia 页面，并显示本地目录下的程序的源代码。
+
+What just happened?
+### 刚刚发生了什么？
+GIO aims to provide a set of powerful virtual filesystem APIs. It provides a set of interfaces
+that serve as a foundation to be extended by the specific implementation. For example, here
+we use the GFile interface that defines the functions for a file. The GFile API does not tell
+us where the file is located, how the file is read, or other such details. It just provides the
+functions and that's it. The specific implementation that is transparent to the application
+developers will do all the hard work. Let's see what this means.
+
+In the following code, we get the file location from the array files . Then we check if the
+location has an HTTP protocol identifier or not; if yes, we create the GFile object using
+file_new_for_uri , otherwise we use file_new_for_path . We can, of course, use
+file_new_for_uri even for the local file, but we need to prepend the file:// protocol
+identifier to the filename.
+
+````JavaScript
+        if (files[i].match(/^http:/)) {
+          file = Gio.file_new_for_uri(files[i]);
+        } else {
+          file = Gio.file_new_for_path(files[i]);
+        }
+````
+
+This is the only difference between handling the remote file and the local file. And after
+that we can access files either from the local drive or from a web server by using the same
+function with GIO.
+
+````JavaScript
+        var stream = file.read();
+        var data_stream = new Gio.DataInputStream.c_new(stream);
+        var data = data_stream.read_until("", 0);
+````
+
+Here we use the read function to get the GFileInputStream object. Notice here that the
+API provides the same function wherever the file is.
+
+The resulting object is a stream. A stream is a sequence of data that flows from one end
+to the other. The stream can be passed to an object and can transform it to become another
+stream or just consume it.
+
+In our case, we get the stream initially from the file.read function. We transfer this
+stream into GDataInputStream in order to easily read the data. With the new stream, we
+ask GIO to read the data until we find nothing, which means it has reached the end of the
+file. And then we spit the data out onto the screen.
+
+Network access with GIO
+## GIO 访问网络
+GIO provides adequate functions to access the network. Here we will learn how to create
+socket client and server programs. Imagine that we are building a simple chat program that
+can send data from one end to another.
+
+Time for action – accessing a network
+### 实践环节 - 访问网络
+For brevity, we will do it only in JavaScript now; you can look at the Vala program in
+core-server and core-client projects code that accompany this book. Ok, so let's see
+what are the steps needed to access the network.
+
+1. Create a new script called core-server.js and fill it with these lines:
+
+````JavaScript
+#!/usr/bin/env seed
+
+GLib = imports.gi.GLib;
+Gio = imports.gi.Gio;
+GObject = imports.gi.GObject;
+
+Main = new GType({
+  parent: GObject.Object.type,
+  name: "Main",
+  init: function(self) {
+    this.process = function(connection) {
+      var input = new Gio.DataInputStream.c_new (connection.get_input_stream());
+      var data = input.read_upto("\n", 1);
+      Seed.print("data from client: " + data);
+      var output = new Gio.DataOutputStream.c_new (connection.get_output_stream());
+      output.put_string(data.toUpperCase());
+      output.put_string("\n");
+      connection.get_output_stream().flush();
+    }
+
+    this.start = function() {
+      var service = new Gio.SocketService();
+      service.add_inet_port(9000, null);
+      service.start();
+      while (1) {
+        var connection = service.accept(null);
+        this.process(connection);
+      }
+    }
+  }
+});
+
+var main = new Main();
+main.start();
+````
+
+2. Run this script. The program will stay running until we press Ctrl + C.
+2. 运行这个脚本，这个程序会一直运行直到我们按 `Ctrl + C` 来停止它。
+
+3. Then create another script called core-client.js ; here is the code:
+3. 然后，我们创建 `core-client.js` ，下面是它的代码：
+
+````JavaScript
+#!/usr/bin/env seed
+
+GLib = imports.gi.GLib;
+Gio = imports.gi.Gio;
+GObject = imports.gi.GObject;
+
+Main = new GType({
+  parent: GObject.Object.type,
+  name: "Main",
+  init: function(self) {
+
+    this.start = function() {
+    var address = new Gio.InetAddress.from_string("127.0.0.1");
+    var socket = new Gio.InetSocketAddress({address: address,
+    port: 9000});
+    var client = new Gio.SocketClient ();
+    var conn = client.connect (socket);
+
+    Seed.printf("Connected to server");
+
+    var output = conn.get_output_stream();
+    var output_stream = new Gio.DataOutputStream.c_new(output);
+
+    var message = "Hello\n";
+    output_stream.put_string(message);
+    output.flush();
+
+    var input = conn.get_input_stream();
+    var input_stream = new Gio.DataInputStream.c_new(input);
+    var data = input_stream.read_upto("\n", 1);
+    Seed.printf("Data from server: " + data);
+    }
+  }
+});
+var main = new Main();
+main.start();
+````
+
+4. Run this program and notice the output of both the server and the client programs.
+They can talk to each other!
+4. 在另一个终端页面运行这个客户端程序，看一下服务端和客户端程序的输出，它们之间可以通信了！
+
+运行两次客户端程序：
+````
+$ ./core-client.js 
+Connected to server
+Data from server: HELLO
+$ ./core-client.js 
+Connected to server
+Data from server: HELLO
+````
+
+在服务端程序，您会看到接收到两次消息：
+````
+$ ./core-server.js 
+data from client: Hello
+data from client: Hello
+
+````
+
+What just happened?
+### 刚刚发生了什么？
+GIO provides high-level as well as low-level networking APIs that are really easy to use.
+Let's take a look at the server first.
+Here we open a service in port number 9000 . It is an arbitrary number; you can use your
+own number if you want, with some restrictions:
+
+````JavaScript
+      var service = new Gio.SocketService();
+      service.add_inet_port(9000, null);
+      service.start();
+````
+
+You can't run the service if there is already another service running with a port number that
+is the same as yours. Also, you have to run your program as root if you want to use a port
+number below 1024.
+And then we enter an infinite loop that is called when the service is accepting an incoming
+connection. Here, we just call our process function to handle the connection. That's it.
+
+````JavaScript
+      while (1) {
+        var connection = service.accept(null);
+        this.process(connection);
+}
+````
+
+The server's basic activity is defined as easily as that. The details of the processing is
+another story.
+
+Then, we create a GDataInputStream object based on the input stream coming from the
+connection. And then we read the data in until we find the end of line character which is \n .
+It is one character, so we put 1 there as well. And then we print the incoming data.
+
+````JavaScript
+      var input = new Gio.DataInputStream.c_new (connection.get_input_stream());
+      var data = input.read_upto("\n", 1);
+      Seed.print("data from client: " + data);
+
+````
+
+To make things interesting, we want to return something to the client. Here we create an
+object of the GDataOutputStream class that is coming from the connection object. We
+change the data coming from the client to uppercase, and we send it back through the
+stream. In the end, we make sure everything is sent by flushing down the pipe. That's all
+on the server side.
+
+````JavaScript
+      var output = new Gio.DataOutputStream.c_new (connection.get_output_stream());
+      output.put_string(data.toUpperCase());
+      output.put_string("\n");
+      connection.get_output_stream().flush();
+````
+
+On the client side, initially, we make an object of GInetAddress . The object is then fed
+into GInetSocketAddress so we can define the port of the address that we want to
+connect to.
+
+````JavaScript
+    var address = new Gio.InetAddress.from_string("127.0.0.1");
+    var socket = new Gio.InetSocketAddress({address: address,
+    port: 9000});
+````
+
+Then we connect the socket object with SocketClient into GSocketClient . After this,
+if everything is OK, the connection to the server is established.
+
+````JavaScript
+    var client = new Gio.SocketClient ();
+    var conn = client.connect (socket);
+````
+
+On the client side, in principle, the process occurs in the opposite way as it would occur on
+the server side. Here we create GDataOutputStream first, based on the stream coming
+from the connection object. Then we just send the message into it. We also want to flush it
+so all the remaining data in the pipeline is flushed out.
+
+````JavaScript
+    var output = conn.get_output_stream();
+    var output_stream = new Gio.DataOutputStream.c_new(output);
+
+    var message = "Hello\n";
+    output_stream.put_string(message);
+    output.flush();
+````
+
+Then, we expect to get something from the server; so we create an input stream object.
+We read from it until we find a newline, and we print the data.
+
+````JavaScript
+    var input = conn.get_input_stream();
+    var input_stream = new Gio.DataInputStream.c_new(input);
+    var data = input_stream.read_upto("\n", 1);
+    Seed.printf("Data from server: " + data);
+````
+
+Have a go hero – making an echo server
+### 大胆实践 - 让服务器有回显功能
+Echo server is a service that returns everything that is sent to it as it is, without any
+modifications. For example, if we send "Hello", the server will also send back "Hello".
+Sometimes it is used for checking whether the connection between two hosts is working.
+How about modifying the server program to be an echo server?
+
+We can put it in an infinite loop, but if we type "quit", the server disconnects.
