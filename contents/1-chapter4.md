@@ -846,6 +846,8 @@ In real life, our program must be able to access files wherever they are stored,
 remotely. Imagine that we have a set of files that we need to read. The files are spread both
 locally and remotely. GIO will make it easy for us to manipulate these files as it provides an
 API to interact with our files in an abstract way.
+在实际的应用中我们程序都会访问存储在本地或远程的文件。
+假设我们有一大堆文件需要读取，这些文件中有本地的也有远程的。GIO 提供 API 使得操作这些文件非常容易。
 
 Time for action – accessing files
 ### 实践环节 - 访问文件
@@ -947,12 +949,20 @@ we use the GFile interface that defines the functions for a file. The GFile API 
 us where the file is located, how the file is read, or other such details. It just provides the
 functions and that's it. The specific implementation that is transparent to the application
 developers will do all the hard work. Let's see what this means.
+GIO 致力于提供一系列的强大的虚拟文件系统 API 。
+它提供了很多接口来作为基础架构，应用程序可以按具体的实现来进行扩展。
+GFile 接口不会告诉您文件在哪，怎么读取文件和其它内在的细节。它只提供功能仅此而已。
+具体的实现对应用程序开发者很透明，也需要他们做很多工作。
+让我们在下面详细了解一下。
 
 In the following code, we get the file location from the array files . Then we check if the
 location has an HTTP protocol identifier or not; if yes, we create the GFile object using
 file_new_for_uri , otherwise we use file_new_for_path . We can, of course, use
 file_new_for_uri even for the local file, but we need to prepend the file:// protocol
 identifier to the filename.
+下面的代码，从数组文件获取文件的存放位置，然后检查是否有 HTTP 协议的标识，如果有的话，我们
+使用 file_new_for_uri 来创建 GFile 对象，否则使用 file_new_for_path 。
+当然我们也可以使用 file_new_for_uri 来创建本地文件对象，但需要加上 `file://` 协议做为文件名的前缀。
 
 ````JavaScript
         if (files[i].match(/^http:/)) {
@@ -965,6 +975,7 @@ identifier to the filename.
 This is the only difference between handling the remote file and the local file. And after
 that we can access files either from the local drive or from a web server by using the same
 function with GIO.
+这是处理远程文件和本地文件的唯一差别。在这之后我们或者从本地驱动器或网络服务器访问文件时都使用同一个函数。
 
 ````JavaScript
         var stream = file.read();
@@ -974,30 +985,42 @@ function with GIO.
 
 Here we use the read function to get the GFileInputStream object. Notice here that the
 API provides the same function wherever the file is.
+我们使用 `read` 函数来获取 `GFileInputStream` 对象。
+请注意 API 提供同一个函数而不关心文件在哪。
 
 The resulting object is a stream. A stream is a sequence of data that flows from one end
 to the other. The stream can be passed to an object and can transform it to become another
 stream or just consume it.
+返回的对象是一个流。流是一系列的数据从一端流向另一端。
+流可以被传到一个对象，并可以转换为另一个流或只是使用它。
 
 In our case, we get the stream initially from the file.read function. We transfer this
 stream into GDataInputStream in order to easily read the data. With the new stream, we
 ask GIO to read the data until we find nothing, which means it has reached the end of the
 file. And then we spit the data out onto the screen.
+在我们的代码中，我们使用 `file.read` 函数来初始化流 (strem) 。
+我们把这个流传入到 GDataInputStream 来读取文件的数据。
+通过新的流我们让 GIO 来读取数据直到读完所有的数据，也就是读到文件的结尾。
+然后把数据显示到屏幕上。
 
 Network access with GIO
 ## GIO 访问网络
 GIO provides adequate functions to access the network. Here we will learn how to create
 socket client and server programs. Imagine that we are building a simple chat program that
 can send data from one end to another.
+GIO 也提供了许多访问网络的函数。接下来我们将了解到如何创建套接字 (socket) 来为客户端和服务端程序所用。
+假设我们创建一个简单的聊天程序，能够从一端发送数据到另一端。
 
 Time for action – accessing a network
 ### 实践环节 - 访问网络
 For brevity, we will do it only in JavaScript now; you can look at the Vala program in
 core-server and core-client projects code that accompany this book. Ok, so let's see
 what are the steps needed to access the network.
+简单起见，我们将只提供 JavaScript 的代码，您也可以参考 `core-server` 和 `core-client` 项目中的 Vala 代码。
+好，看看访问网络需要几步。
 
 1. Create a new script called core-server.js and fill it with these lines:
-
+1. 创建 `core-server.js` 文件，并输入下面的代码：
 ````JavaScript
 #!/usr/bin/env seed
 
@@ -1106,8 +1129,11 @@ What just happened?
 ### 刚刚发生了什么？
 GIO provides high-level as well as low-level networking APIs that are really easy to use.
 Let's take a look at the server first.
+GIO 提供了易于使用的上层和底层的网络 API 。
+让先看看服务端。
 Here we open a service in port number 9000 . It is an arbitrary number; you can use your
 own number if you want, with some restrictions:
+我们打开的一个服务端口 9000 。这是一个随意的数字，您在限制范围内可以使用自己想用的端口：
 
 ````JavaScript
       var service = new Gio.SocketService();
@@ -1118,8 +1144,11 @@ own number if you want, with some restrictions:
 You can't run the service if there is already another service running with a port number that
 is the same as yours. Also, you have to run your program as root if you want to use a port
 number below 1024.
+当另一个服务和您人程序使用同一个端口，您就无法运行服务程序。如果您想使用小于 1024 的端口，
+您必须具有 root 权限。
 And then we enter an infinite loop that is called when the service is accepting an incoming
 connection. Here, we just call our process function to handle the connection. That's it.
+然后我们进入无限的循环中，当接受到一个连接，我们调用 `process` 函数来处理连接。
 
 ````JavaScript
       while (1) {
@@ -1130,11 +1159,14 @@ connection. Here, we just call our process function to handle the connection. Th
 
 The server's basic activity is defined as easily as that. The details of the processing is
 another story.
+服务端的行为定义的非常简单，处理的细节就是另一个故事了。
 
 Then, we create a GDataInputStream object based on the input stream coming from the
 connection. And then we read the data in until we find the end of line character which is \n .
 It is one character, so we put 1 there as well. And then we print the incoming data.
-
+然后，我们基于来自于连接的流来创建 `GDataOutputStream` 对象。
+接下来读取数据直到我们找到一行的最后一个字符 `\n` 。
+它是一个字符，因此我们使用 1 来作为另一个参数。最后打印收到的数据。
 ````JavaScript
       var input = new Gio.DataInputStream.c_new (connection.get_input_stream());
       var data = input.read_upto("\n", 1);
@@ -1147,6 +1179,11 @@ object of the GDataOutputStream class that is coming from the connection object.
 change the data coming from the client to uppercase, and we send it back through the
 stream. In the end, we make sure everything is sent by flushing down the pipe. That's all
 on the server side.
+为了让事情更有趣，我们在客户端返回一些东东。
+因此我们创建 GDataOutputStream 类，也是基于连接对象。
+我们改变从客户端传来的数据为大写，通过流再发送回去。
+最后，我们把官道清空来保证所有的东东都被发送出去。
+这些就是服务端做的那些事儿。
 
 ````JavaScript
       var output = new Gio.DataOutputStream.c_new (connection.get_output_stream());
@@ -1158,6 +1195,8 @@ on the server side.
 On the client side, initially, we make an object of GInetAddress . The object is then fed
 into GInetSocketAddress so we can define the port of the address that we want to
 connect to.
+在客户端我们创建一个 `GInetAddress` 对象，然后传给 `GInetSocketAddress` 对象，这样我们
+可以把想要连接的地址的端口加进来。
 
 ````JavaScript
     var address = new Gio.InetAddress.from_string("127.0.0.1");
@@ -1167,6 +1206,7 @@ connect to.
 
 Then we connect the socket object with SocketClient into GSocketClient . After this,
 if everything is OK, the connection to the server is established.
+然后，我们用 `SocketClient` 来连接套接字。这样就万事具备，与服务端的连接就建立好了。
 
 ````JavaScript
     var client = new Gio.SocketClient ();
@@ -1177,6 +1217,8 @@ On the client side, in principle, the process occurs in the opposite way as it w
 the server side. Here we create GDataOutputStream first, based on the stream coming
 from the connection object. Then we just send the message into it. We also want to flush it
 so all the remaining data in the pipeline is flushed out.
+在客户端基本上与服务端所做的处理相反。我们先基于连接对象的流来创建 `GDataInputStream` 。
+然后向它发送信息。我们也需要清空它，这样在管道中所有剩余的数据都会被发送出去。
 
 ````JavaScript
     var output = conn.get_output_stream();
@@ -1189,6 +1231,8 @@ so all the remaining data in the pipeline is flushed out.
 
 Then, we expect to get something from the server; so we create an input stream object.
 We read from it until we find a newline, and we print the data.
+然后，我们希望能够从服务端获取些东东，我们创建输入流对象。
+当有一行新的数据时我们会读取它，并打印出来。
 
 ````JavaScript
     var input = conn.get_input_stream();
@@ -1203,5 +1247,9 @@ Echo server is a service that returns everything that is sent to it as it is, wi
 modifications. For example, if we send "Hello", the server will also send back "Hello".
 Sometimes it is used for checking whether the connection between two hosts is working.
 How about modifying the server program to be an echo server?
+回显服务端是能把所有发送出的东西原封原样地返送回来。例如，发送 "Hello" ，服务端将发送回 "Hello" 。
+这在检查两个主机之间的连接是否正常工作时很有用。
+那么如何更改服务端的程序来实现回显服务端？
 
 We can put it in an infinite loop, but if we type "quit", the server disconnects.
+我们可以把它放到无限的循环中，如果输入 "quit" ，与服务端断开连接。
