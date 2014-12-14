@@ -1,80 +1,42 @@
 # 4 Using GNOME Core Libraries #
-> GNOME core libraries are a collection of foundation utility classes and
-functions. It covers many things from simple date-conversion functions to
-virtual filesystem access management. GNOME would not be as powerful as it
-is now without its core libraries. There are a lot of UI libraries out there that are
-not successful because of the lack of this kind of power. No wonder there are
-many libraries outside GNOME that also use GNOME core libraries to support
-their functionalities.
-> GNOME 核心库是基础工具类和函数的集合，它覆盖了很多，包括从简单的日期转换函数到虚拟文件系统的访问管理。
-如果 GNOME 这些核心库，它现在也就不会这么强大。
-有许多其它的界面图形库没有成功的原因就在于缺少这种核心库。
-当然也有许多非 GNOME 库也使用了 GNOME 的核心库来实现他们的功能。
 
-GNOME core libraries are composed from GLib and GIO, which are non-UI libraries for
-supporting our UI applications. These libraries connect our programs with files, networks,
-timers, and other important aspects in the operating system. Without this knowledge, we
-can probably make a beautiful program, but we would be incapable of interacting with the
-rest of the system.
+> GNOME 核心库是基础工具类和函数的集合，它覆盖了很多东西，包括从简单的日期转换函数到虚拟文件系统的访问管理。如果没有 GNOME 这些核心库，它现在也就不会这么强大。许多其它的界面图形库没有成功的原因就在于缺少这种核心库。当然也有许多 GNOME 之外的库也使用了 GNOME 的核心库来实现他们的功能。
+
 GNOME 核心库由 GLib 和 GIO 组成，它们是非用户界面 (non-UI) 的库来支持用户界面 (UI) 的程序。
 这些库把文件，网络，定时器和其它重要的操作系统功能与我们的程序连接起来。
 没有这些库，我们可以做一个漂亮的程序，但有可能它无法与操作系统交互。
 
-In this chapter we shall learn about:
 在本章节我们将会学到：
 
-- The GLib main loop and basic functions
 - GLib 主循环和基本函数
-- The GObject signaling system and properties
 - GObject 信号系统和属性
-- The GIO files, stream and networking
 - GIO 中的文件，流和网络
-- The GSettings configuration system
 - GSettings 配置系统
 
-Ok, lets get started.
 好，现在就开始吧。
 
-Before we start
 ## 开始之前
 
-There are a few exercises in this chapter that need access to the Internet or the local
-network. Make sure you have a good connection before running the program. Another
-exercise requires access to removable hardware and mountable filesystems.
-本章节有几个练习需要访问互联网或本地网络，所以在运行程序前请保证连接正常。
-还有一个练习会移除硬件和挂载的文件系统。
+本章节有几个练习需要访问互联网或本地网络，所以在运行程序前请保证网络连接正常。
+还有一个练习需要访问可移除的硬件和可挂载的文件系统。
 
-In this chapter, we will do something different regarding the Vala exercises. Because the
-nature of the discussions are independent of each other, each Vala exercise is done in its
-own project instead of continuously modifying a file in a single project. So, in each Vala
-exercise we will create a new project and work inside that project. The name of the project
-will be noted so you can easily compare your project with the source code that accompanies
-this book. Similar to the previous chapter, the project we create here is a Vala GTK+ (simple)
-project. In the project properties, we should not tick on the GtkBuilder support for user
-interface option and should pick No license in the License option.
-在本章节关于 Vala 的练习我们稍做些调整。因为每一次所讨论的内容都是独立的，每一个 Vala 练习都在自己的独立的项目中。
-而不是在一个项目中不断地修改代码。
+在本章节关于 Vala 的练习我们稍做些调整。因为每一次所讨论的内容都是独立的，每一个 Vala 练习都在自己的独立的项目中。而不是在一个项目中不断地修改代码。
 因此，在每一个 Vala 练习中我们都会创建一个新的项目并在其中进行修改。
 项目的名字也会让您容易比较书中的源代码。与前一章节类似，我们在这里创建的项目是一个 `Vala GTK+ (simple)` 项目。
-在项目的属性中，请不要钩选 `GtkBuilder support for user interface` ，在 `License` 中选择 `No license` 即可。
+在项目的属性中，请不要钩选 **GtkBuilder support for user interface** ，在 **License** 中选择 **No license** 即可。
 
-In each exercise, the JavaScript code follows the Vala code and it is kept inside one file per
-exercise. The functionalities of the JavaScript code would be exactly the same. So you can
-opt to choose whether you want to use either the Vala or the JavaScript code, or both.
-在每一个练习中，Vala 代码后会有 JavaScript 的代码，并保存在一个文件中。
+在每一个练习中，JavaScript 的代码都会保存在一个单独的文件中，并附在 Vala 代码后面。
 因此您可以选择使用 Vala 代码，或者 JavaScript 代码，或者同时使用。
 
-The GLib main loop
 ## GLib 主循环
-GLib provides a main event loop, which takes care of the events coming from various
-sources. With this event loop, we can catch these events and do the necessary processing.
-GLib 提供了主事件循环机制，来处理来自不同源头的事件。
-在这个事件循环中，我们可以捕获它们并做相应的处理。
 
-Time for action – playing with the GLib main loop
+GLib 提供了主事件循环机制，来处理来自不同源头的事件。
+在这个事件循环中，我们可以捕获这些事件并做相应的处理。
+
 ### 实践环节 - 试试 GLib 主循环
-Here, we will introduce ourselves to the GLib main loop.
-1.	Create a new Vala project called core-mainloop and use this code in the Main class:
+
+接下来就让我们了解一下 GLib 主循环。
+
 1. 创建一个新的 Vala 项目，起名为 `core-mainloop` ，并在 `Main` 类中添加下面的代码：
 
 ````JavaScript
@@ -82,14 +44,17 @@ using GLib;
 public class Main : Object
 {
 	int counter = 0;
+
 	bool printCounter() {
 		stdout.printf("%d\n", counter++);
 		return true;
 	}
+
 	public Main ()
 	{
 		Timeout.add(1000, printCounter);
 	}
+
 	static int main (string[] args)
 	{
 		Main main = new Main();
@@ -100,16 +65,15 @@ public class Main : Object
 }
 ````
 
-2.	And this is the JavaScript code's counterpart; you can name the script as core-mainloop.js :
 2. 下面是 JavaScript 的代码，把这段脚本保存为 `core-mainloop.js` ：
 
 ````JavaScript
 #!/usr/bin/env seed
+
 GLib = imports.gi.GLib;
 GObject = imports.gi.GObject;
 
 Main = new GType({
-
 	parent: GObject.Object.type,
 	name: "Main",
 
@@ -132,27 +96,21 @@ var loop = new GLib.MainLoop.c_new(context);
 loop.run();
 
 ````
-3.	Run it. Do you notice that the program prints the counter and stays running?
-You can do nothing except press the Ctrl + C key combination to kill it.
-3. 运行下试试，您注意到程序会不停地打印出计数么？
-这个时候您只需要 `Ctrl + C` 来停止程序即可。
 
-What just happened?
+3. 运行下试试，您注意到程序会不停地打印出计数了么？
+这个时候您只需要 **Ctrl + C** 来停止程序即可。
+
 ### 刚刚发生了什么？
-We have set up a GLib main loop with a single source of events, a timeout.
-Initially, we set the counter variable to 0 .
-我们创建了一个 GLib 的主循环，并包含一个 timeout 事件源。
-在程序的开始我们把 counter 变量设置为 0 。
+
+我们创建了一个 GLib 的主循环，并包含一个唯一的超时(`timeout`)事件源。
+在程序的开始我们把 `counter` 变量设置为 0 。
 
 ````JavaScript
 int counter = 0;
 ````
 
-We prepare a function called printCounter to print the counter variable's value, and
-increase its value by one immediately after printing. Then we return true to indicate that
-we want the counter to continue.
-我们准备了一个叫 printCounter 的函数来打印 counter 变量的值，在打印后我们会立即给它加一。
-然后返回 true 来表明继续计数。
+我们准备了一个 `printCounter` 的函数来打印 `counter` 变量的值，在打印后我们会立即给它加一。
+然后返回 `true` 来表明让计数继续。
 
 ````JavaScript
 bool printCounter() {
@@ -161,11 +119,8 @@ bool printCounter() {
 }
 ````
 
-In the constructor, we create a Timeout object with a 1000 ms interval pointing to our
-printCounter function. This means that printCounter will be called at every 1-second
-interval, and it will be repeatedly called as long as printCounter returns true .
-在构造函数内，我们创建一个 Timeout 对象，以 1000 毫秒的间隔和 printCounter 函数为参数。
-这也就是我们想每隔 1 秒 printCounter 函数都会被调用，只要 printCounter 函数返回 true ，
+在构造函数内，我们创建一个以 1000 毫秒为间隔的 `Timeout` 对象，并指向之前的 `printCounter` 函数。
+这也就意味着每隔 1 秒 `printCounter` 函数都会被调用，并且只要 `printCounter` 函数返回 `true` ，
 它就会重复地被调用。
 
 ````JavaScript
@@ -175,15 +130,10 @@ public Main ()
 }
 ````
 
-In the main function, we instantiate the Main class, create a MainLoop object, and call run .
-This will cause the program to stay running until we manually terminate it. When the loop
-is running, it can accept events submitted to it. The Timeout object that we created earlier
-produces such an event. Whenever the timer interval expires, it notifies the main loop,
-which in turn calls the printCounter function.
-在 main 函数中，我们把 Main 类实例化，创建一个 MainLoop 对象并调用 run 函数来运行它。
-这将会让程序持续的运行直到我们手动结束它。当 loop 运行时，它会接受到提交给它的事件。
-我们先前创建的 Timeout 对象就会产生这类事件。当定时器 (timer) 的时间间隔到达时，它会通知
-主循环，接着调用 printCounter 函数。
+在 `main` 函数中，我们把 `Main` 类实例化，然后创建一个 `MainLoop` 对象并调用 `run` 函数来运行它。
+这将会让程序持续的运行直到我们手动结束它。当后循环 (`loop`)运行时，它会接受到提交给它的所有事件。
+我们先前创建的 `Timeout` 对象就会产生如此事件。当定时器 (`timer`) 的时间间隔到达时，它会通知主循环，接着调用 `printCounter` 函数。
+
 ````JavaScript
 static int main (string[] args)
 {
@@ -194,23 +144,17 @@ static int main (string[] args)
 }
 ````
 
-Now, let's take a look at the JavaScript code. If you notice, the class structure is a bit different
-from what we learned in the previous chapter. Here we use Seed Runtime's construction
-of class.
 现在看一下 JavaScript 的代码，您会注意到类的结构与前一章节所学到的不太一样，这我们使用了
-Seed 类的运行时构建。
+Seed 类的运行时构建。(TODO)
+
 ````JavaScript
 GLib = imports.gi.GLib;
 GObject = imports.gi.GObject;
 ````
 
-Here, we import GLib and GObject . Then we construct a class called Main , which is based
-on GObject .
-这我们导入了 GLib 和 GObject ，然后构造一个基于 GObject 的类，也就是 Main 。 
+这我们导入了 `GLib` 和 `GObject` ，然后构造一个基于 `GObject` 的类，我们起名为 `Main` 。 
 
-Here is how we do it. The following code says that we subclass GType into a new class called
-Main and pass the object structure into the argument.
-看看我们怎么做的，下面的代码显示了我们创建一个基于 GType 的新类叫 Main ，并传递一个对象结构体
+看看我们怎么做的，下面的代码显示了我们创建一个基于 `GType` 的新类叫 `Main` ，并传递一个对象结构体
 作为参数。
 
 ````JavaScript
@@ -219,15 +163,9 @@ Main = new GType({
 	name: "Main",
 ````
 
-The first member of the object is parent , which is the parent of our class. We assign it with
-GObject.Object.type to denote that our class is derived from Object in the GObject
-module that we imported previously. Then we name our class as Main . After that, we put
-the functions inside the init function, which is also the constructor of the class.
-The content of the class member is similar to what we've seen in the Vala code and it is quite
-straightforward.
-对象的第一个成员是 parent ，表示这个类的父类。我们给它赋值为 GObject.Object.type ，表示我们的类
-是从我们之前导入的 GObject 中的 Object 派生出来的。
-然后我们给我们的类起名为 Main ，之后我们在类的构造函数即 init 函数中添加了一些函数
+对象的第一个成员是 `parent` ，表示这个类的父类。我们给它赋值为 `GObject.Object.type` ，表示我们的类是从我们之前导入的 `GObject` 中的 `Object` 派生出来的。
+然后我们给我们的类起名为 `Main` ，之后我们在类的构造函数即 `init` 函数中添加了一些功能。
+
 类成员的内容与我们之前 Vala 的代码很相似，代码也很简单明了。
 
 ````JavaScript
@@ -243,9 +181,8 @@ straightforward.
 });
 ````
 
-Then we have the code that is analogous to what we have in Vala's static main function.
-Here we create our Main object and create the GLib's main loop.
-接下来的代码与 Vala 中静态 main 函数的类似了，创建 Main 对象和 GLib 主循环。
+接下来的代码与 Vala 中静态 `main` 函数类似，创建 `Main` 对象和 GLib 主循环。
+
 ````JavaScript
 var main = new Main();
 var context = GLib.main_context_default();
@@ -253,30 +190,19 @@ var loop = new GLib.MainLoop.c_new(context);
 loop.run();
 ````
 
-Have a go hero – stopping the timeout
 ### 大胆实践 - 如何停止 timeout
 
-Our program counts forever. Can you make it stop after the counter reaches 10?
-我们的程序会一直数下去，您能够让它在 10 次后停下来么？
+我们的程序会一直计数下去，您能够让它在 10 次后停下来么？
 
 ----
-You can just play with the printCounter return value.
-> ✔ 您只需要修改 printCounter 的返回值。
+> ✔ 您只需要修改 `printCounter` 的返回值。
 
 -----
 
-Or even better, can you make it stop totally, meaning that the program would exit after the
-counter reaches 10?
-还有更好的方法，您可以完全的停止它么？也就是让程序 10 次计数后退出。
+或者做得再好一些，您可以做到完全地停止么？也就是让程序 10 次计数后程序退出。
 
-You can ignore the return value and rearrange the code, and
-somehow pass the loop object into the Main class. In the
-printCounter function, you can call loop.quit()
-whenever it reaches 10 to make the program break the main
-loop programmatically.
 ----
-> ✔ 您可以忽略返回值，重新更改下代码，把 loop 对象放到 Main 类中。
-在 printCounter 函数，当到达 10 次时您可以调用 loop.quit() 来中止程序的主循环。
+> ✔ 您可以忽略返回值，重新更改下代码，把 `loop` 对象传到 `Main` 类中。在 `printCounter` 函数，当到达 10 次时您可以调用 `loop.quit()` 来中止程序的主循环。
 
 -----
 
