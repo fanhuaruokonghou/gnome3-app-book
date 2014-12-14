@@ -206,21 +206,17 @@ loop.run();
 
 -----
 
-GObject signals
 ## GObject 信号
 
-GObject provides a signaling mechanism that we can hook into. In the previous chapter, we
-have discussed the Vala signaling system. Internally, it is actually using the GObject signaling
-system, but it is so transparent that it is seamlessly integrated into the language itself.
 GObject 提供了一个信号机制，我们可以挂个钩子进去。在前一章节，我们已经讨论了 Vala 的信号系统。
 其实在本质上它是使用了 GObject 信号系统，但它是如此地透明以至于无缝的结合在语言自身中。
 
-Time for action – handling GObject signals
 ### 实践环节 - 处理 GOject 信号
-Let us see how to do it in JavaScript:
+
 让我们看一下在 JavaScript 中怎么做：
-1. Create a new script called core-signals.js and fill it with the following code:
-1. 创建一个新的脚本叫 core-signals.js ，并输入下面的代码：
+
+1. 创建一个新的脚本叫 `core-signals.js` ，并输入下面的代码：
+
 ````JavaScript
 #!/usr/bin/env seed
 
@@ -263,8 +259,8 @@ main.signal.connect('alert', function(object, counter) {
 loop.run();
 ````
 
-2. Run it and notice the messages printed:
 2. 运行后的结果如下：
+
 ````
 0
 1
@@ -279,26 +275,21 @@ loop.run();
 Counter is 10, let's stop here
 ````
 
-What just happened?
 ### 刚刚发生了什么？
-With the GObject signaling system, we can subscribe for notifications that are emitted by
-an object. We just need to provide a handler that will perform some action upon receiving
-the signal.
-在 GObject 信号系统内我们可以订阅一个对象发生的通知。
-我们需要提供一个处理函数来在接收到信号的时候执行一些动作。
 
-Here, we declare our signal in an array by putting an object with names and parameters as
-the content of the object. The parameter type is the type that is known by the GLib system.
-If our signal does not have any parameters, we can omit it.
-我们以一个数组的方式声明了一个信号，其中放了一个以名字 (name) 和参数 (parameters) 为内容的对象
+在 GObject 信号系统内我们可以订阅一个对象发出的通知。
+我们只需要提供一个处理函数来在接收到信号的时候执行一些动作。
+
+我们以一个数组的方式声明了一个信号，其中放了一个以名字 (`name`) 和参数 (`parameters`) 为内容的对象。
 参数的类型是 GLib 系统中的已经定义的类型。 如果对象没有任何参数，我们可以忽略它。
+
 ````JavaScript
-signals: [
-  {
-    name: "alert",
-    parameters: [GObject.TYPE_INT]
-  }
-],
+  signals: [
+    {
+      name: "alert",
+      parameters: [GObject.TYPE_INT]
+    }
+  ],
 
 main.signal.connect('alert', function(object, counter) {
   Seed.printf("Counter is %d, let's stop here", counter);
@@ -306,30 +297,23 @@ main.signal.connect('alert', function(object, counter) {
 });
 ````
 
-Then we subscribe to the signal and provide a closure that just prints the counter value and
-breaks the main loop. Note that the parameter is defined in the second parameter of the
-closure. The first parameter is reserved for the object itself.
-然后我们订阅这个信号并提供一个闭包函数来打印 counter 的数值并中止主循环。
+然后我们订阅这个信号并提供一个闭包函数来打印 `counter` 的数值并中止主循环。
 请注意一下闭包函数的第二个参数。第一个参数为对象自身所保留。
-Finally, we emit the signal by calling the signal by its name. self is the Main class we pass in
-the init function.
-最后，我们通过名字来调用信号发出信号，self 是我们在 init 函数中的 Main 类。
+
+最后，我们通过信号的名字来发出信号，`self` 是我们传入到 `init` 函数中的 `Main` 类。
+
 ````JavaScript
-if (counter > 9) {
-  self.signal.alert.emit(counter);
-}
+      if (counter > 9) {
+        self.signal.alert.emit(counter);
+      }
 ````
 
-As soon as we call this, the signal will be processed in the main loop and will be delivered
-to the objects that subscribe to it.
-只要我们一调用这个函数，信号就会被主循环所处理，把它传给订阅的对象。
+只要我们一调用这个函数，信号就会被主循环所处理，并把它传给订阅的对象。
 
-Have a go hero – writing it in Vala
 ### 大胆实践 - 在 Vala 中写下代码
-Compared with the previous code, signal declaration, emission, and subscription are easier
-in Vala, as we've seen it the last time. How about trying to write the previous code in Vala?
-与之前的代码比较一下，信号的声明，信号的发出和订阅，这些在 Vala 中都很容易。
-怎么在 Vala 中实现前面的代码呢？
+
+对比上面的代码，信号的声明，信号的发出和订阅，这些在 Vala 中都很容易，之前我们也尝试过。
+让我们试试在 Vala 中实现前面的代码怎么样？
 
 GLib properties
 ## GLib 属性
