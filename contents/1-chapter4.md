@@ -819,24 +819,19 @@ GFile API 不会告诉您文件在哪，怎么读取文件和其它内在的细�
 通过新的流我们让 GIO 来读取数据直到读完所有的数据，也就是读到文件的结尾。
 然后把数据显示到屏幕上。
 
-Network access with GIO
 ## GIO 访问网络
-GIO provides adequate functions to access the network. Here we will learn how to create
-socket client and server programs. Imagine that we are building a simple chat program that
-can send data from one end to another.
-GIO 也提供了许多访问网络的函数。接下来我们将了解到如何创建套接字 (socket) 来为客户端和服务端程序所用。
+
+GIO 也提供了许多访问网络的函数。接下来我们将了解到如何创建套接字 (`socket`) 来为客户端和服务端程序所用。
 假设我们创建一个简单的聊天程序，能够从一端发送数据到另一端。
 
-Time for action – accessing a network
 ### 实践环节 - 访问网络
-For brevity, we will do it only in JavaScript now; you can look at the Vala program in
-core-server and core-client projects code that accompany this book. Ok, so let's see
-what are the steps needed to access the network.
-简单起见，我们将只提供 JavaScript 的代码，您也可以参考 `core-server` 和 `core-client` 项目中的 Vala 代码。
-好，看看访问网络需要几步。
 
-1. Create a new script called core-server.js and fill it with these lines:
+简单起见，我们将只提供 JavaScript 的代码，您也可以参考 `core-server` 和 `core-client` 项目中的 Vala 代码。
+接下来，看看访问网络需要几步。
+[TODO]
+
 1. 创建 `core-server.js` 文件，并输入下面的代码：
+
 ````JavaScript
 #!/usr/bin/env seed
 
@@ -874,10 +869,8 @@ var main = new Main();
 main.start();
 ````
 
-2. Run this script. The program will stay running until we press Ctrl + C.
 2. 运行这个脚本，这个程序会一直运行直到我们按 `Ctrl + C` 来停止它。
 
-3. Then create another script called core-client.js ; here is the code:
 3. 然后，我们创建 `core-client.js` ，下面是它的代码：
 
 ````JavaScript
@@ -915,15 +908,15 @@ Main = new GType({
     }
   }
 });
+
 var main = new Main();
 main.start();
 ````
 
-4. Run this program and notice the output of both the server and the client programs.
-They can talk to each other!
 4. 在另一个终端页面运行这个客户端程序，看一下服务端和客户端程序的输出，它们之间可以通信了！
 
 运行两次客户端程序：
+
 ````
 $ ./core-client.js 
 Connected to server
@@ -934,6 +927,7 @@ Data from server: HELLO
 ````
 
 在服务端程序，您会看到接收到两次消息：
+
 ````
 $ ./core-server.js 
 data from client: Hello
@@ -941,15 +935,12 @@ data from client: Hello
 
 ````
 
-What just happened?
 ### 刚刚发生了什么？
-GIO provides high-level as well as low-level networking APIs that are really easy to use.
-Let's take a look at the server first.
+
 GIO 提供了易于使用的上层和底层的网络 API 。
-让先看看服务端。
-Here we open a service in port number 9000 . It is an arbitrary number; you can use your
-own number if you want, with some restrictions:
-我们打开的一个服务端口 9000 。这是一个随意的数字，您在限制范围内可以使用自己想用的端口：
+让我们先看看服务端。
+
+我们打开的一个服务端口 `9000` 。这是一个随意的数字，您在限制范围内可以使用自己想用的端口：
 
 ````JavaScript
       var service = new Gio.SocketService();
@@ -957,14 +948,10 @@ own number if you want, with some restrictions:
       service.start();
 ````
 
-You can't run the service if there is already another service running with a port number that
-is the same as yours. Also, you have to run your program as root if you want to use a port
-number below 1024.
-当另一个服务和您人程序使用同一个端口，您就无法运行服务程序。如果您想使用小于 1024 的端口，
-您必须具有 root 权限。
-And then we enter an infinite loop that is called when the service is accepting an incoming
-connection. Here, we just call our process function to handle the connection. That's it.
-然后我们进入无限的循环中，当接受到一个连接，我们调用 `process` 函数来处理连接。
+当另一个服务和您的服务端程序使用同一个端口，您就无法运行服务端程序。
+如果您想使用小于 `1024` 的端口，您必须具有 `root` 权限。
+
+然后我们进入无限的循环中，当接受到一个客户端连接，我们调用 `process` 函数来处理连接。
 
 ````JavaScript
       while (1) {
@@ -973,16 +960,12 @@ connection. Here, we just call our process function to handle the connection. Th
 }
 ````
 
-The server's basic activity is defined as easily as that. The details of the processing is
-another story.
-服务端的行为定义的非常简单，处理的细节就是另一个故事了。
+服务端的行为定义的非常简单，处理的细节就是另外的事了。
 
-Then, we create a GDataInputStream object based on the input stream coming from the
-connection. And then we read the data in until we find the end of line character which is \n .
-It is one character, so we put 1 there as well. And then we print the incoming data.
 然后，我们基于来自于连接的流来创建 `GDataOutputStream` 对象。
-接下来读取数据直到我们找到一行的最后一个字符 `\n` 。
-它是一个字符，因此我们使用 1 来作为另一个参数。最后打印收到的数据。
+接下来读取数据直到我们找到一行的最后一个字符 `\n` ，它是一个字符，因此我们使用 1 来作为另一个参数。
+最后打印收到的数据。
+
 ````JavaScript
       var input = new Gio.DataInputStream.c_new (connection.get_input_stream());
       var data = input.read_upto("\n", 1);
@@ -990,15 +973,10 @@ It is one character, so we put 1 there as well. And then we print the incoming d
 
 ````
 
-To make things interesting, we want to return something to the client. Here we create an
-object of the GDataOutputStream class that is coming from the connection object. We
-change the data coming from the client to uppercase, and we send it back through the
-stream. In the end, we make sure everything is sent by flushing down the pipe. That's all
-on the server side.
-为了让事情更有趣，我们在客户端返回一些东东。
-因此我们创建 GDataOutputStream 类，也是基于连接对象。
+为了让事情更有趣，我们给客户端返回一些东东。
+因此我们创建 `GDataOutputStream` 类，也是基于客户端的连接对象。
 我们改变从客户端传来的数据为大写，通过流再发送回去。
-最后，我们把官道清空来保证所有的东东都被发送出去。
+最后，我们把管道清空来保证所有的东东都被发送出去。
 这些就是服务端做的那些事儿。
 
 ````JavaScript
@@ -1008,9 +986,6 @@ on the server side.
       connection.get_output_stream().flush();
 ````
 
-On the client side, initially, we make an object of GInetAddress . The object is then fed
-into GInetSocketAddress so we can define the port of the address that we want to
-connect to.
 在客户端我们创建一个 `GInetAddress` 对象，然后传给 `GInetSocketAddress` 对象，这样我们
 可以把想要连接的地址的端口加进来。
 
@@ -1020,20 +995,15 @@ connect to.
     port: 9000});
 ````
 
-Then we connect the socket object with SocketClient into GSocketClient . After this,
-if everything is OK, the connection to the server is established.
-然后，我们用 `SocketClient` 来连接套接字。这样就万事具备，与服务端的连接就建立好了。
+然后，我们用 `GSocketClient` 中的 `SocketClient` 来连接套接字 (`socket`) 。
+如果这些都 OK 了，与服务端的连接就建立好了。
 
 ````JavaScript
     var client = new Gio.SocketClient ();
     var conn = client.connect (socket);
 ````
 
-On the client side, in principle, the process occurs in the opposite way as it would occur on
-the server side. Here we create GDataOutputStream first, based on the stream coming
-from the connection object. Then we just send the message into it. We also want to flush it
-so all the remaining data in the pipeline is flushed out.
-在客户端基本上与服务端所做的处理相反。我们先基于连接对象的流来创建 `GDataInputStream` 。
+在客户端基本上与服务端所做的处理相反。我们先基于连接对象的流创建 `GDataOutputStream` 。
 然后向它发送信息。我们也需要清空它，这样在管道中所有剩余的数据都会被发送出去。
 
 ````JavaScript
@@ -1045,8 +1015,6 @@ so all the remaining data in the pipeline is flushed out.
     output.flush();
 ````
 
-Then, we expect to get something from the server; so we create an input stream object.
-We read from it until we find a newline, and we print the data.
 然后，我们希望能够从服务端获取些东东，我们创建输入流对象。
 当有一行新的数据时我们会读取它，并打印出来。
 
@@ -1057,17 +1025,13 @@ We read from it until we find a newline, and we print the data.
     Seed.printf("Data from server: " + data);
 ````
 
-Have a go hero – making an echo server
 ### 大胆实践 - 让服务器有回显功能
-Echo server is a service that returns everything that is sent to it as it is, without any
-modifications. For example, if we send "Hello", the server will also send back "Hello".
-Sometimes it is used for checking whether the connection between two hosts is working.
-How about modifying the server program to be an echo server?
-回显服务端是能把所有发送出的东西原封原样地返送回来。例如，发送 "Hello" ，服务端将发送回 "Hello" 。
+
+**回显服务器 (Echo server)** 是能把所有发送给它的东西原封原样地返送给客户端。
+例如，发送 "Hello" ，服务端将发送回 "Hello" 。
 这在检查两个主机之间的连接是否正常工作时很有用。
 那么如何更改服务端的程序来实现回显服务端？
 
-We can put it in an infinite loop, but if we type "quit", the server disconnects.
 我们可以把它放到无限的循环中，如果输入 "quit" ，与服务端断开连接。
 
 Understanding GSettings
