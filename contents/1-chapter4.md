@@ -685,20 +685,15 @@ stdout.printf("%s %d\n", app.get_name(), app.get_version());
 假设我们有一个段叫 `License` ，下面有 `license_file` 和 `customer_id` 条目。
 我们使用这些信息来检查用户是否有权限使用软件。
 
-GIO, the input/output library
 ## GIO 输入/输出库
-In real life, our program must be able to access files wherever they are stored, locally or
-remotely. Imagine that we have a set of files that we need to read. The files are spread both
-locally and remotely. GIO will make it easy for us to manipulate these files as it provides an
-API to interact with our files in an abstract way.
+
 在实际的应用中我们程序都会访问存储在本地或远程的文件。
 假设我们有一大堆文件需要读取，这些文件中有本地的也有远程的。GIO 提供 API 使得操作这些文件非常容易。
 
-Time for action – accessing files
 ### 实践环节 - 访问文件
-Let's see how it works:
+
 让我看下怎么做：
-1. Let's create a new script called core-files.js , and fill it with these lines:
+
 1. 创建一个新的 `core-files.js` 脚本，输入下面的代码：
 
 ````JavaScript
@@ -738,8 +733,6 @@ var main = new Main();
 main.start();
 ````
 
-2. Alternatively, you can create a Vala project called core-files . Fill
-src/core_files.vala with this code:
 2. 或者，您可以创建一个 Vala 项目，起名为 `core-files` ，然后输入下面的代码到 `src/core_files.vala` 文件中：
 
 ````JavaScript
@@ -782,32 +775,21 @@ public class Main : Object
 }
 ````
 
-3. Run the program, and notice that it fetches the Wikipedia page from the Internet as
-well as the source code of the program from the local directory.
 3. 运行程序，您会发现它会从网络上抓取 Wikipedia 页面，并显示本地目录下的程序的源代码。
+[IMG]
 
-What just happened?
 ### 刚刚发生了什么？
-GIO aims to provide a set of powerful virtual filesystem APIs. It provides a set of interfaces
-that serve as a foundation to be extended by the specific implementation. For example, here
-we use the GFile interface that defines the functions for a file. The GFile API does not tell
-us where the file is located, how the file is read, or other such details. It just provides the
-functions and that's it. The specific implementation that is transparent to the application
-developers will do all the hard work. Let's see what this means.
+
 GIO 致力于提供一系列的强大的虚拟文件系统 API 。
 它提供了很多接口来作为基础架构，应用程序可以按具体的实现来进行扩展。
-GFile 接口不会告诉您文件在哪，怎么读取文件和其它内在的细节。它只提供功能仅此而已。
+在此我们将使用提供很多文件功能的 GFile 接口。
+GFile API 不会告诉您文件在哪，怎么读取文件和其它内在的细节。它只提供功能仅此而已。
 具体的实现对应用程序开发者很透明，也需要他们做很多工作。
 让我们在下面详细了解一下。
 
-In the following code, we get the file location from the array files . Then we check if the
-location has an HTTP protocol identifier or not; if yes, we create the GFile object using
-file_new_for_uri , otherwise we use file_new_for_path . We can, of course, use
-file_new_for_uri even for the local file, but we need to prepend the file:// protocol
-identifier to the filename.
-下面的代码，从数组文件获取文件的存放位置，然后检查是否有 HTTP 协议的标识，如果有的话，我们
-使用 file_new_for_uri 来创建 GFile 对象，否则使用 file_new_for_path 。
-当然我们也可以使用 file_new_for_uri 来创建本地文件对象，但需要加上 `file://` 协议做为文件名的前缀。
+下面的代码，从 `files` 数组获取文件的存放位置，然后检查是否有 HTTP 协议的标识，如果有的话，我们
+使用 `file_new_for_uri` 来创建 GFile 对象，否则使用 `file_new_for_path` 。
+当然我们也可以使用 `file_new_for_uri` 来创建本地文件对象，但需要加上 `file://` 协议做为文件名的前缀。
 
 ````JavaScript
         if (files[i].match(/^http:/)) {
@@ -817,10 +799,8 @@ identifier to the filename.
         }
 ````
 
-This is the only difference between handling the remote file and the local file. And after
-that we can access files either from the local drive or from a web server by using the same
-function with GIO.
-这是处理远程文件和本地文件的唯一差别。在这之后我们或者从本地驱动器或网络服务器访问文件时都使用同一个函数。
+这是处理远程文件和本地文件的唯一差别。在这之后我们或者从本地驱动器或网络服务器访问文件时都
+使用 GIO 中相同的函数。
 
 ````JavaScript
         var stream = file.read();
@@ -828,23 +808,14 @@ function with GIO.
         var data = data_stream.read_until("", 0);
 ````
 
-Here we use the read function to get the GFileInputStream object. Notice here that the
-API provides the same function wherever the file is.
 我们使用 `read` 函数来获取 `GFileInputStream` 对象。
-请注意 API 提供同一个函数而不关心文件在哪。
+请注意 API 提供相同的函数而不关心文件在哪。
 
-The resulting object is a stream. A stream is a sequence of data that flows from one end
-to the other. The stream can be passed to an object and can transform it to become another
-stream or just consume it.
-返回的对象是一个流。流是一系列的数据从一端流向另一端。
-流可以被传到一个对象，并可以转换为另一个流或只是使用它。
+之后，返回的对象是一个流。**流(`stream`)** 是一系列的数据从一端流向另一端。
+流可以被传到一个对象，转换为另一个流或只是使用它。
 
-In our case, we get the stream initially from the file.read function. We transfer this
-stream into GDataInputStream in order to easily read the data. With the new stream, we
-ask GIO to read the data until we find nothing, which means it has reached the end of the
-file. And then we spit the data out onto the screen.
-在我们的代码中，我们使用 `file.read` 函数来初始化流 (strem) 。
-我们把这个流传入到 GDataInputStream 来读取文件的数据。
+在我们的代码中，我们最先使用 `file.read` 函数来获得流。
+我们把这个流传入到 `GDataInputStream` 来读取文件的数据。
 通过新的流我们让 GIO 来读取数据直到读完所有的数据，也就是读到文件的结尾。
 然后把数据显示到屏幕上。
 
