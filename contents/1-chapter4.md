@@ -542,33 +542,28 @@ Counter value has changed to 0
 当一个属性是只读的，我们就不能够更改它的值。现在，就来把 `counter` 属性设成只读的吧。
 提示：看看属性的标志位。
 
-Configuration files
 ## 配置文件
-In many cases we need to somehow read from a configuration file in order to customize
-how our program should behave. Here, we will learn how to use the simplest configuration
-mechanism in GLib using a configuration file. Imagine that we have a configuration file and
-it contains the name and version of our application so that we can print it somewhere inside
-our program.
+
 在很多情况下我们都会多少从配置文件中读取些配置信息来订制化我们的程序。
 在此我们将了解如何来通过最简单的 GLib 的配制机制使用配置文件。
-设想一下我们有一个配置文件，它包含程序的名字和版本，以至于我们可以在程序中打印出这些信息。
+设想一下我们有一个配置文件，它包含程序的名字和版本，这样我们可以在程序中打印出这些信息。
 
-Time for action – reading configuration files
 ### 实践环节 - 读取配置文件
-Here's how to do it:
+
 下面介绍如何来做：
-1.	Create a configuration file; let's call it core-keyfile.ini . Its content is as follows:
+
 1. 创建一个配置文件，起名为 `core-keyfile.ini` ，输入下面的内容：
+
 ````
 [General]
 name = "This is name"
 version = 1
 ````
-2.	 Create a new Vala project and name it core-keyfile . Put the core-keyfile.
-ini file inside the project directory (but not in src ).
+
 2. 创建一个新的项目，起名为 `core-keyfile` ，并把 `core-keyfile.ini` 放到项目的目录下（不是`src`目录下）。
-3.	 Edit core_keyfile.vala to look like this:
+
 3. 按下面来编辑 `core_keyfile.vala` ：
+
 ````JavaScript
 using GLib;
 
@@ -601,9 +596,8 @@ public class Main : Object
 }
 ````
 
-4. The JavaScript code (let's call it core-keyfile.js ) looks like this (remember to
-put the .ini file in the same directory as the script):
 4. JavaScript 的代码（让我们起名为`core-keyFile.js` ）如下（记住把 .ini 的文件放置到同一目录下）：
+
 ````JavaScript
 #!/usr/bin/env seed
 
@@ -630,24 +624,19 @@ Main = new GType({
 var main = new Main();
 Seed.printf("%s %d", main.get_name(), main.get_version());
 ````
-5. Run the program and look at the output:
+
 5. 运行后的结果：
+
 ````
 "This is name" 1
 ````
-What just happened?
-### 刚刚发生了什么？
-The configuration file we are using has a key-value pairs structure conforming to the
-Desktop Entry Specification document of freedesktop.org . In the GNOME platform,
-this structure is commonly used, mainly in the .desktop files, which are used by the
-launcher. People using Windows might find this similar to the .ini format, which is also
-used for configuration.
-我们在此处在配置文件中使用的键值对的结构遵守 freedesktop.org 的桌面配置文件规范（Desktop Entry Specification）。
-在 GNOME 环境下，这是一个十分常用的结构，主要使用在 `.desktop` 文件中，这类文件被桌面启动器所使用。
-使用 Windows 的用户在 .ini 配置文件中也能看到类似的格式。
 
-GLib provides the KeyFile class to access this type of configuration file. In our constructor,
-we have this snippet:
+### 刚刚发生了什么？
+
+我们在此处在配置文件中使用的键值对的结构遵守 `freedesktop.org` 的桌面配置文件规范（`Desktop Entry Specification`）。
+在 GNOME 环境下，这是一个十分常用的结构，主要使用在 `.desktop` 文件中，这类文件被桌面启动器所使用。
+使用 Windows 的用户在 `.ini` 配置文件中也能看到类似的格式。
+
 GLib 提供了 `KeyFile` 类来访问这种类型的配置文件，在构造函数中的代码如下：
 
 ````JavaScript
@@ -655,20 +644,14 @@ keyFile = new KeyFile();
 keyFile.load_from_file("core-keyfile.ini", 0);
 ````
 
-It initializes an object of KeyFile , and loads the core-keyfile.ini file into the object.
 它初始化了一个 `KeyFile` 对象，并把 `core-keyfile.ini` 加载到对象中。
 
-If we jump a bit in our core-keyfile.ini file, we have a section, as shown, written inside
-a pair of square brackets.
 看一下 `core-keyFile.ini` 文件，在方括号内为段标记。
 
 ````
 [General]
 ````
 
-And then all the entries following it can be accessed by specifying the section name. Here we
-provide two methods, get_version() and get_name() , as shortcuts to get the value of
-the name and version entries in the configuration file.
 然后，段下面的所有的条目都可以通过指定段的名字来访问。
 在这我们提供了两个方法 `get_version()` 秋 `get_name()` 来获取配置文件中 `name` 和 `version` 条目的值。
 
@@ -684,34 +667,23 @@ public string get_name()
 }
 ````
 
-Inside the methods, we just get the integer value from the version entry and get the string
-value from the name entry. We also see that we obtain the entries under the General
-section. And in these methods we just return the value immediately.
-在这两个方法内，从 version 条目我们读取一个整型数值，从 name 条目获取一个字符串。
-这些都是从 General 段下的条目获得的。
+在这两个方法内，从 `version` 条目我们读取一个整型数值，从 `name` 条目获取一个字符串。
+这些都是从 `General` 段下的条目获得的。
 在这两个方法中我们立即返回获取的值。
 
-
-As shown in the following code, we consume the values from the methods and print them:
 如下面代码所示，我们打印出获取的值：
 
 ````
 stdout.printf("%s %d\n", app.get_name(), app.get_version());
 ````
 
-Quite easy, isn't it? The JavaScript code is also easy and straightforward; so it does not need
-to be explained further.
 很容易吧？ JavaScript 代码也很容易且容易明白，就不用再进一步解释了吧。
 
-Have a go hero – multi-section configuration
 ### 大胆实践 - 多个段的配置文件
-Let's try adding more sections inside the configuration file and accessing the values. Imagine
-that we have a specific section called License that has license_file and customer_id
-as the entries. Imagine that we will use this information later to check whether the customer
-has the right to use the software.
+
 让我们在配置文件中添加多个段，然后再读取其中的内容。
-假设我们有一个段叫 License ，下面有 license_file 和 customer_id 条目。
-我们使用这些信息来检查用户是否有权力使用软件。
+假设我们有一个段叫 `License` ，下面有 `license_file` 和 `customer_id` 条目。
+我们使用这些信息来检查用户是否有权限使用软件。
 
 GIO, the input/output library
 ## GIO 输入/输出库
