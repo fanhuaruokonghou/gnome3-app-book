@@ -32,5 +32,6 @@ Main = new GType({
     }
   }
 });
+
 var main = new Main();
 main.start();
