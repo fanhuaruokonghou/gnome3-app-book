@@ -39,8 +39,9 @@
 # 贡献者列表
 
 - **[佟辉](https://github.com/tonghuix)**：完成本书源文件架构的初始化，并编译了第一章“安装 GNOME 3 及其 SDK”。
-- **[WnereiZ](https://github.com/wnereiz)**：增加了openSUSE环境配置脚本
-
+- **[WnereiZ](https://github.com/wnereiz)**：增加了openSUSE环境配置脚本。
+- **[Anthony Fok](https://github.com/anthonyfok)**：完善并丰富了字体效果，更加美观。
+- **[Bin Li](https://github.com/binli)**：完成了本书的第三章，奠定了技术基调。
 - （期待更多人参与）
 
 # 著作权及版权声明 #
