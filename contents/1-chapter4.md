@@ -1034,67 +1034,44 @@ GIO 提供了易于使用的上层和底层的网络 API 。
 
 我们可以把它放到无限的循环中，如果输入 "quit" ，与服务端断开连接。
 
-Understanding GSettings
 ## 理解 GSettings
-Previously, we have used the GLib configuration parser to read our application configuration.
-Now we will try to use a more advanced settings system with GSettings. With this, we can
-access configurations throughout the GNOME platform, including all the applications that
-use the system.
+
 之前我们使用 GLib 配置解析器来读取我们应用程序的配置。
 现在我们准备使用一个更高级的配置系统 `GSettings` ，我们可以访问整个 GNOME 平台的配置，包括
-所有使用 GSettings 的应用程序的配置。
+所有使用 GSettings 的应用程序。
 
-Time for action – learning GSettings
 ### 实践环节 - 学习 GSettings
-Let's see what the GSettings configuration system looks like as visualized by the
-dconf-editor tool:
-让我们先通过 `dconf-editor` 来可视化地看下 GSettings 配置系统：
-1.	Launch a terminal.
-1. 打开一个终端。
-2.	Run dconf-editor from the terminal.
-2. 运行 `dconf-editor` 。
-3.	Navigate through the org tree on the left-hand side of the application, and go
-through gnome, desktop, and then background.
-3. 在程序的左侧浏览一下 `org` 树，看下其下面的 `gnome` ，`desktop` ，然后 `background` 。
 
-What just happened?
+让我们先通过 `dconf-editor` 来可视化地看下 GSettings 配置系统：
+
+1. 打开一个终端。
+2. 运行 `dconf-editor` 。
+3. 在程序的左侧浏览一下 `org` 树，看下其下面的 **gnome** ，**desktop** ，然后 **background** 。
+
+[IMG]
+
 ### 刚刚发生了什么？
-GSettings is a new introduction in GNOME 3. Before, the configuration was handled with
-GConf. In GNOME 3, every shipped GNOME application has been migrated to use GSettings.
-The concept of storing the settings in GConf and GSettings remains the same, that is, by
-using key-value pairs. However, GSettings contains improvements in many aspects, including
-more restrictive usage by enforcing schema as metadata. With GConf, we can freely store
-and read any values from the system.
-GSettings 在 GNOME 3 中引入的。之前使用 GConf 来处理配置。
+
+GSettings 是在 GNOME 3 中新引入的。之前使用 GConf 来处理配置。
 在 GNOME 3 上的每一个 GNOME 应用程序都迁移到使用 GSettings 。
 在 GSettings 和 GConf 上保存设置的理念都是一样的，都使用键值对。
-然而，GSettings 在很多方面都有改进，包括强制使用 schema 作为 metadata 的限定用法。
-GConf 我们可以自由的存储和读取系统的任何值。
+然而，GSettings 在很多方面都有改进，包括强制使用 `schema` 作为 `metadata` 的限定用法。
+而通过原来的 GConf 可以自由的存储和读取系统的任何值。
 
-GSettings is actually only a top-level layer. Underneath, there is a low-level system called
-dconf, which handles the actual storing and reading of the values. The tool we discuss here
-shows the keys and values in a hierarchy so we can browse, read, and even write a new value
-(if the schema says it's writable, of course).
-GSettings 实际上处于高级层次，而底层的系统是 dconf ，由它来处理实际的数值的存储和读取。
-我们在这讨论的工具以层次来展示键和值，我们可以浏览，读取，甚至写一个新的值（当然得需要 schema 设置为可写的）。
+GSettings 实际上处于高级层次，而底层的系统是 `dconf` ，由它来处理实际的数值的存储和读取。
+我们在这讨论的 **dconf编辑器** 以层次来展示键和值，我们可以浏览，读取，甚至写一个新的值（当然得需要 `schema` 设置为可写的）。
 
-In the screenshot we can see that org.gnome.desktop.background has many entries;
-one of them is picture-uri , which contains the URI of the desktop's background image.
-在截图您可以看见 org.gnome.desktop.background 下面有很多条目，picture-uri 就是其中之一，
+在截图您可以看见 `org.gnome.desktop.background` 下面有很多条目，`picture-uri` 就是其中之一，
 它包含了桌面背景图片的位置 (URI) 。
 
-GSettings API
 ## GSettings API
-In this book, the API is more interesting than the administrative tools. After we see GSettings
-visually, it is time to access GSettings through API.
-在本书中，API 比较管理工具更有趣些，在我们对 GSettings 有了直观的认识后，就让我们来通过 API 使用 GSettings 。
 
-Time for action – accessing GSettings programmatically
+在本书中，API 比管理工具更有趣些，在我们对 GSettings 有了直观的认识后，就让我们来通过 API 使用 GSettings 。
+
 ### 实践环节 - 通过程序访问 GSettings
-Imagine that we create a tool to set the background image of our GNOME desktop. Here is
-how to do it:
+
 设想一下我们来创建一个改变桌面背景的工具，按下面来做：
-1. Create a new Vala project called core-settings , and modify core_settings.vala with the following:
+
 1. 创建一个新的 Vala 项目，起名为 `core-settings` ，按下面来编辑 `core_settings.vala` 文件：
 
 ````JavaScript
@@ -1138,8 +1115,6 @@ public class Main : Object
 }
 ````
 
-2. The JavaScript code is quite straightforward; here we have a snippet of it just to see
-the adaptation needed from the Vala code:
 2. JavaScript 代码更简单明了些，我们只摘出一个片段来看看从 Vala 代码中所作的改变：
 
 ````JavaScript
@@ -1162,46 +1137,36 @@ init: function(self) {
   this.settings = new Gio.Settings({schema: 'org.gnome.desktop.background'});
 }
 ````
-3.	Run it and see the change in your current desktop background image. Your current
-desktop background will change to the file specified in the code.
+
 3. 运行一下看看是否更改了当前的桌面背景，应该变成我们所设置的图片。
 
-What just happened?
 ### 刚刚发生了什么？
-In this exercise, we use the already installed schema owned by the desktop, which is
-org.gnome.desktop.background , so we can just use the API to access the settings.
-在这个练习中，我们使用已经被桌面安装的 schema ，也就是 org.gnome.desktop.background ，
+
+在这个练习中，我们使用已经被桌面安装的 `schema` ，也就是 `org.gnome.desktop.background` ，
 因此我们只是使用 API 来访问这个设置。
 
-Let's take a look at the details.
 让我们看看一下细节。
 
-First, we initiate the connection to GSettings by specifying the schema name, which is
-org.gnome.desktop.background , and it returns a GSettings object.
-首先，我们初始化一个 GSettings 连接，并以 schema 名字为参数，也就是 org.gnome.desktop.background ，
+首先，我们初始化一个 GSettings 连接，并以 schema 名字为参数，也就是 `org.gnome.desktop.background` ，
 它会返回一个 GSettings 对象。
 
 ```JavaScript
-settings = new Settings("org.gnome.desktop.background");
+    settings = new Settings("org.gnome.desktop.background");
 ````
 
-Then we put a simple safety net just in case the initialization fails. In the real world, we can
-perform reinitialization rather than just a simple return.
 然后，我们做了一个简单的安全性处理以防初始化失败。
 实际上，我们可以重新初始化而不是简单的返回。
 
 ```JavaScript
-if (settings == null) {
-  return null;
-}
+    if (settings == null) {
+      return null;
+    }
 ````
 
-After that, we obtain a value of type string under the key picture-uri , and we can
-consume it in any way we want.
-在这之后，我们获得 picutre-uri 的字符串，以方便我们后续的使用。
+在这之后，我们获得 `picutre-uri` 的字符串，以方便我们后续的使用。
 
 ```JavaScript
-return settings.get_string("picture-uri");
+    return settings.get_string("picture-uri");
 ````
 
 Finally, we set the value using the same key. If it is successful, we ask GSettings to save it to
@@ -1210,44 +1175,26 @@ the disk by calling the sync function. Easy, right?
 简单不？
 
 ```JavaScript
-if (settings.set_string ("picture-uri", new_file)) {
-Settings.sync ();
-}
+    if (settings.set_string ("picture-uri", new_file)) {
+      Settings.sync ();
+    }
 ````
 
-Summary
 ## 总结
-In this chapter, we learned a lot about the GNOME core libraries. Even though we did not
-touch everything in the libraries, we managed to tackle all the basics and essentials needed
-to build our GNOME application.
+
 在本章节，我们学习到了许多 GNOME 核心库。即使如此，我们仍没有讲述所有的库，只是先介绍了一些
 基本和必要的库以方便编写 GNOME 程序。
 
-We know now that GLib provides a main loop that handles all the events from various
-sources. We discussed the GObject property and the signaling system. We also tried to look
-into the events processed by the main loop by posting with the timeouts, and signals when
-a value of a property has changed. Regarding the programming languages, we found out
-that Vala is more integrated with GNOME, and JavaScript requires more code to use GObject
-properties or signals.
 我们现在知道 GLib 提供了主循环，可以处理来自各种各样源的所有事件。
-我们讨论了 GObject 属性和信号系统。我们也尝试了在主循环中 timeout 发出事件的处理和当属性发生变化时信号的处理。
+我们讨论了 GObject 属性和信号系统。我们也尝试了在主循环中对 timeout 发出事件的处理和对属性发生变化时的信号处理。
 关于编程语言，我们发现 Vala 的代码许多都集成在 GNOME 中，JavaScript 需要更多的代码来使用 GObject 属性或信号。
 
-We had an exercise of accessing files both locally and remotely, and we found out that the
-API provided by GIO is very easy to use because it abstracts the way we access those files
-wherever they are.
 我们也练习了本地和远程访问文件，我们发现 GIO 提供的 API 很容易使用，因为有一个统一接口来
 访问这些文件而不用关心它们在哪。
 
-With GIO, we also did an experiment of building a simple client and server chat program and
-we found out that to create such an interesting program requires quite a minimal amount
-of code, both in JavaScript and Vala.
 通过 GIO 我们也编译了一个简单的客户端和服务端聊天程序，我们发现通过 JavaScript 和 Vala 中小量的代码就可以实现如此有趣的事件。
 
-Finally, we had a discussion about GSettings and tried to read and write the GNOME
-desktop's background image with it.
 最后，我们讨论了 GSettings ，并尝试通过它来读取和更改 GNOME 桌面背景图片。
 
-After we master the foundation of the GNOME application, the next step is to learn the
-basics of a graphical program in the next chapter.
-在我们掌握了 GNOME 应用程序的基础后，下一步我们将在下一章节中学习图形程序的基础。
+在我们掌握了 GNOME 应用程序的基础后，下一步我们将在下一章节中学习有关图形化编程的基础。
+
